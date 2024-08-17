@@ -4,6 +4,7 @@ import altair as alt
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objs as go
+
 # Load data
 data = pd.read_csv('dataset.csv')
 
@@ -33,15 +34,6 @@ selected_month = st.sidebar.selectbox(
 )
 
 filtered_data_month = data[data['month_name'] == selected_month]
-
-selected_week = st.sidebar.multiselect(
-    "Select Week(s)", 
-    options=sorted(filtered_data_month['week'].unique()), 
-    default=filtered_data_month['week'].unique()
-)
-
-# Filter data based on selections
-filtered_data = filtered_data_month[filtered_data_month['week'].isin(selected_week)]
 
 # Create tabs for different sections
 tab1, tab2 = st.tabs(["Transaction Information", "Customer Information"])
@@ -113,7 +105,7 @@ with tab1:
 
     # Line Chart: Number of Transactions Over Time (by Week)
     st.write("## Number of Transactions Over Time (by Week)")
-    transactions_by_week = filtered_data['week'].value_counts().sort_index().reset_index()
+    transactions_by_week = filtered_data_month['week'].value_counts().sort_index().reset_index()
     transactions_by_week.columns = ['week', 'transaction_count']
 
     # Calculate the percentage change compared to the previous week
@@ -125,7 +117,6 @@ with tab1:
 
     # Loop through the data to create segments with different colors
     for i in range(len(transactions_by_week) - 1):
-    # Determine the color based on whether the value increased or decreased
         color = 'green' if transactions_by_week['transaction_count'].iloc[i + 1] > transactions_by_week['transaction_count'].iloc[i] else 'red'
 
         # Add a trace for the line segment
@@ -138,10 +129,12 @@ with tab1:
             text=[f"{transactions_by_week['transaction_count'].iloc[i + 1]}"],
             textposition="top center",
             textfont=dict(size=12),
-            showlegend=False
+            showlegend=False,
+            hoverinfo='text',
+            hovertext=[f"Week: {transactions_by_week['week'].iloc[i + 1]}<br>Transactions: {transactions_by_week['transaction_count'].iloc[i + 1]}<br>Change: {transactions_by_week['change'].iloc[i + 1]:.2f}%"]
         ))
 
-# Add the last point as a marker only (no line segment after it), with a label
+    # Add the last point as a marker only (no line segment after it), with a label
     fig.add_trace(go.Scatter(
         x=[transactions_by_week['week'].iloc[-1]],
         y=[transactions_by_week['transaction_count'].iloc[-1]],
@@ -150,17 +143,19 @@ with tab1:
         text=[f"{transactions_by_week['transaction_count'].iloc[-1]}"],
         textposition="top center",
         textfont=dict(size=12),
-        showlegend=False
+        showlegend=False,
+        hoverinfo='text',
+        hovertext=[f"Week: {transactions_by_week['week'].iloc[-1]}<br>Transactions: {transactions_by_week['transaction_count'].iloc[-1]}<br>Change: {transactions_by_week['change'].iloc[-1]:.2f}%"]
     ))
 
     # Update the layout of the chart
     fig.update_layout(
-    title='Number of Transactions Over Time (by Week)',
-    xaxis_title='Week',
-    yaxis_title='Total Transactions',
-    showlegend=False,
-    margin=dict(l=40, r=40, t=50, b=50),
-)
+        title='Number of Transactions Over Time (by Week)',
+        xaxis_title='Week',
+        yaxis_title='Total Transactions',
+        showlegend=False,
+        margin=dict(l=40, r=40, t=50, b=50),
+    )
 
     # Adjust the layout of the chart to make sure the labels fit well
     fig.update_xaxes(tickangle=-45, tickmode='linear')
@@ -171,7 +166,7 @@ with tab1:
 
     # Bar Chart: Number of Transactions by Day of the Week (sorted by transaction count)
     st.write("## Number of Transactions by Day of the Week")
-    transactions_by_day = filtered_data['day_name'].value_counts().reset_index()
+    transactions_by_day = filtered_data_month['day_name'].value_counts().reset_index()
     transactions_by_day.columns = ['day_name', 'transaction_count']
 
     # Sort by transaction count (descending order)
@@ -253,7 +248,7 @@ with tab2:
     fig = px.pie(segmentation_counts, 
                  values='count', 
                  names='segment', 
-                 title='Customer Segmentation', # Add a hole in the center for a donut chart
+                 title='Customer Segmentation',
                  labels={'segment': 'Customer Segment'}
                 )
 
