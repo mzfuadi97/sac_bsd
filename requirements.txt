@@ -1,0 +1,11 @@
+altair==4.1.0
+matplotlib==3.4.2
+nltk==3.6.2
+numpy==1.21.0
+pandas==1.3.0
+Pillow==8.2.0
+plotly==5.1.0
+seaborn==0.11.1
+streamlit==0.84.0
+wordcloud==1.8.1
+tabula-py==2.3.0
