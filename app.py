@@ -224,8 +224,9 @@ with tab2:
     customer_data = pd.merge(customer_transactions, customer_last_purchase[['user_id', 'recency']], on='user_id')
 
     # Define thresholds for segmentation
-    new_customer_threshold = 30  # Days since last purchase
-    loyal_customer_threshold = 3  # Minimum number of transactions to be considered loyal
+    new_customer_threshold = 30  # Hari sejak pembelian terakhir untuk dianggap sebagai pelanggan baru
+    loyal_customer_threshold = 3  # Jumlah transaksi minimum untuk dianggap sebagai pelanggan loyal
+    inactive_threshold = 60  # Hari sejak pembelian terakhir untuk dianggap tidak aktif
 
     # Segment customers
     def segment_customer(row):
@@ -233,6 +234,8 @@ with tab2:
             return 'new_customer'
         elif row['transaction_count'] >= loyal_customer_threshold:
             return 'loyal'
+        elif row['recency'] > inactive_threshold:
+            return 'inactive_customer'
         else:
             return 'regular_customer'
 
